@@ -73,11 +73,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private GoogleMap mMap;
     Handler h = new Handler();
     Handler h2 = new Handler();
+    boolean sendgps;
 
     public static final int RESULT_CODE = 99;
     public static final int GOT_LOCATION = 98;
     EditText search;
-    Button searchBtn;
+    Button searchBtn,selfGps;
     Map<String,Marker> markers;
 
     @Override
@@ -94,6 +95,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         search = (EditText) findViewById(R.id.search);
         searchBtn=(Button)findViewById(R.id.searchbtn);
+        selfGps=(Button)findViewById(R.id.selfGps);
+
+        selfGps.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(sendgps){
+                    sendgps=false;
+                    selfGps.setText("Start getting Device Location");
+                }else{
+                    sendgps=true;
+                    selfGps.setText("Stop getting Device Location");
+                }
+            }
+        });
 
         searchBtn.setOnClickListener(new View.OnClickListener() {
             @Override
