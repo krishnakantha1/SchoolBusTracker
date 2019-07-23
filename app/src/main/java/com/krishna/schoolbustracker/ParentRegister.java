@@ -63,6 +63,7 @@ public class ParentRegister extends AppCompatActivity {
 
     }
 
+    //Basic information checks
     private void validate() {
         firstname=fname.getEditText().getText().toString();
         lastname=lname.getEditText().getText().toString();
@@ -101,6 +102,7 @@ public class ParentRegister extends AppCompatActivity {
 
     }
 
+    //send the data to the database
     private void register() {
         String url="http://www.thantrajna.com/sjec_01/parentRegistration.php";
         StringRequest stringRequest=new StringRequest(Request.Method.POST, url,
@@ -145,6 +147,7 @@ public class ParentRegister extends AppCompatActivity {
         queue.add(stringRequest);
     }
 
+    //save credentials
     private void saveCredientials(String id) {
         SharedPreferences prefs = this.getSharedPreferences("com.krishna.schoolbustracker", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor=prefs.edit();

@@ -42,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        //login directly if users have'nt logged out in the previous session.
         SharedPreferences sharedPreferences=getSharedPreferences("com.krishna.schoolbustracker",Context.MODE_PRIVATE);
         String def="#$%^^&";
         String namesaved=sharedPreferences.getString("email",def);
@@ -62,6 +63,7 @@ public class MainActivity extends AppCompatActivity {
         parent=(TextView)findViewById(R.id.parent);
         queue= Volley.newRequestQueue(this);
 
+        //For login. Checks if credentials are entered and calls for validation.
         login.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -78,6 +80,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        //For parent registration.
         parent.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -89,6 +92,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    //Validates the user by querying the database.
     private void validate() {
         String url="http://www.thantrajna.com/sjec_01/loginValidation.php";
         StringRequest stringRequest=new StringRequest(Request.Method.POST, url,
@@ -96,9 +100,11 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onResponse(String response) {
                         progress.dismiss();
+                        //Email or password is wrong/unregistered.
                         if(response.equalsIgnoreCase("fault")) {
                             Toast.makeText(MainActivity.this,"email or password is wrong." , Toast.LENGTH_SHORT).show();
                         }
+                        //Obtaining further details from the database through the response.
                         else {
                             try {
                                 JSONObject jsonObject = new JSONObject(response);
@@ -132,6 +138,7 @@ public class MainActivity extends AppCompatActivity {
         queue.add(stringRequest);
     }
 
+    //If validated saves the details in "com.krishna.schoolbustracker" file for future use.
     private void saveCredientials(String id,String admin) {
         SharedPreferences prefs = this.getSharedPreferences("com.krishna.schoolbustracker", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor=prefs.edit();

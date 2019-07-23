@@ -16,7 +16,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".StudentBusAttendance"></activity>
+        <activity android:name=".BusLoctionInfo"></activity>
+        <activity android:name=".StudentBusAttendance" />
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"

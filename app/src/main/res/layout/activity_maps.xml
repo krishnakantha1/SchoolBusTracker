@@ -31,6 +31,7 @@
                 android:textColor="@color/black"
                 android:inputType="text"
                 android:textStyle="bold"/>
+
             <ImageView
                 android:layout_width="30dp"
                 android:layout_height="30dp"
@@ -75,19 +76,6 @@
 
 
     </LinearLayout>
-
-
-    <Button
-        android:id="@+id/selfGps"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="10dp"
-        android:text="Stop getting Device Location"/>
-
-
-
 
 
 

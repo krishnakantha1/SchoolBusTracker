@@ -39,6 +39,7 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
@@ -70,15 +71,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private static final int REQUEST_LOCATION = 1;
     private static final int REQUEST_CHECK_SETTINGS=3;
+    public static boolean SELF_GPS_RETRIVAL=true;
     private GoogleMap mMap;
     Handler h = new Handler();
     Handler h2 = new Handler();
-    boolean sendgps;
 
     public static final int RESULT_CODE = 99;
     public static final int GOT_LOCATION = 98;
     EditText search;
-    Button searchBtn,selfGps;
+    Button searchBtn;
     Map<String,Marker> markers;
 
     @Override
@@ -91,25 +92,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mapFragment.getMapAsync(this);
         markers=new HashMap<>();
 
-
-
         search = (EditText) findViewById(R.id.search);
         searchBtn=(Button)findViewById(R.id.searchbtn);
-        selfGps=(Button)findViewById(R.id.selfGps);
 
-        selfGps.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if(sendgps){
-                    sendgps=false;
-                    selfGps.setText("Start getting Device Location");
-                }else{
-                    sendgps=true;
-                    selfGps.setText("Stop getting Device Location");
-                }
-            }
-        });
-
+        //Search button
         searchBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -121,11 +107,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         });
 
         SharedPreferences sharedPreferences=getSharedPreferences("com.krishna.schoolbustracker",Context.MODE_PRIVATE);
-        if(!(sharedPreferences.getInt("admin",1)==1)){
+
+        //Search bar and button only shown if type=Admin.
+        if(!(sharedPreferences.getInt("admin",-1)==1)){
             searchBtn.setVisibility(View.INVISIBLE);
             search.setVisibility(View.INVISIBLE);
         }
 
+        //Ask app permission for location.
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission
                 (this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -133,13 +122,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION);
 
         } else {
-
-
-            Intent i1 = new Intent(this, Myservice.class);
-            ResultReceiver r = new myReciver(null);
-            i1.putExtra("reciver", r);
-            startService(i1);
-
+            //Service to obtain bus location.
+            if(sharedPreferences.getInt("admin",-1)!=2) {
+                 Intent i1= new Intent(this, Myservice.class);
+                ResultReceiver r = new myReciver(null);
+                i1.putExtra("reciver", r);
+                startService(i1);
+            }
+            //service to obtain user location.
             Intent i2 = new Intent(this, GetMyLocation.class);
             ResultReceiver r1 = new myLocation(null);
             i2.putExtra("reciver", r1);
@@ -148,6 +138,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         askGPSLocation(this);
     }
 
+    //method to zoom on the bus searched by the admin if present.
     private void zoomBus(String bus) {
         if(markers.containsKey(bus)){
             LatLng ll=markers.get(bus).getPosition();
@@ -162,6 +153,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
+    //Method to ask user to activate devise GPS.
     private void askGPSLocation(Context context) {
         GoogleApiClient googleApiClient = new GoogleApiClient.Builder(context)
                 .addApi(LocationServices.API).build();
@@ -204,7 +196,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         });
     }
 
-
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -212,21 +203,25 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
+        //Listener for markers on the map.
         mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker) {
                 SharedPreferences sharedPreferences=getSharedPreferences("com.krishna.schoolbustracker",Context.MODE_PRIVATE);
-                if(sharedPreferences.getInt("admin",0)!=0){
+                if(sharedPreferences.getInt("admin",0)==2){
                     Intent i=new Intent(MapsActivity.this,StudentBusAttendance.class);
                     i.putExtra("busno",marker.getTitle());
                     startActivity(i);
+                }else{
+                    Intent i=new Intent(MapsActivity.this,BusLoctionInfo.class);
+                    startActivity(i);
                 }
-
                 return false;
             }
         });
     }
 
+    //Logout
     public void home(View view) {
         SharedPreferences sf=getSharedPreferences("com.krishna.schoolbustracker", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor=sf.edit();
@@ -239,6 +234,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         startActivity(i);
     }
 
+    //Handle the location of the different school bus from the Myservice Service.
     public class myReciver extends ResultReceiver{
 
 
@@ -341,8 +337,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             });
         }
     }
-
-    public  class myLocation extends ResultReceiver{
+    //Handle the user location obtained from mylocation service.
+    public class myLocation extends ResultReceiver{
         double lat,lng,plat,plng;
         boolean once=true;
         Marker myloc;
@@ -359,6 +355,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         try {
                             lat = requestdata.getDouble("lat");
                             lng = requestdata.getDouble("lng");
+                            Toast.makeText(MapsActivity.this, lat+"  "+lng, Toast.LENGTH_SHORT).show();
                             LatLng myLocation1 = new LatLng(lat, lng);
                             if (once){
                                 myloc=mMap.addMarker(new MarkerOptions().position(new LatLng(lat, lng)).title("My Location").icon(BitmapDescriptorFactory.fromResource(R.drawable.user)));

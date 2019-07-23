@@ -53,7 +53,7 @@ public class Myservice extends IntentService {
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-
+                //If previous String request has been responded to by the server
                 if (run == false) {
                     run=true;
                     String url = "http://www.thantrajna.com/sjec_01/getLocation.php";
