@@ -1,7 +1,6 @@
 package com.krishna.schoolbustracker;
 
 import androidx.appcompat.app.AppCompatActivity;
-
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -19,11 +18,9 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.android.material.textfield.TextInputLayout;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -134,7 +131,7 @@ public class MainActivity extends AppCompatActivity {
         queue.add(stringRequest);
     }
 
-    //If validated saves the details in "com.krishna.schoolbustracker" file for future use.
+    //If validated, saves the details in "com.krishna.schoolbustracker" file for future use.
     private void saveCredientials(String id,String admin) {
         SharedPreferences prefs = this.getSharedPreferences("com.krishna.schoolbustracker", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor=prefs.edit();

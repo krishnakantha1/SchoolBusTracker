@@ -26,6 +26,7 @@ public class GetMyLocation extends IntentService {
     @Override
     public void onCreate() {
         super.onCreate();
+        //required for FusedLocationProviderClient.
         mFusedLocationClient = new FusedLocationProviderClient(this);
         locationRequest = new LocationRequest();
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
@@ -48,12 +49,13 @@ public class GetMyLocation extends IntentService {
     protected void onHandleIntent(@Nullable final Intent intent) {
 
 
-
+        //permission check required
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 return;
             }
         }
+        //get the location of the user using the FusedLocationProviderClient api.
         mFusedLocationClient.requestLocationUpdates(locationRequest,new LocationCallback() {
             @Override
             public void onLocationResult(LocationResult locationResult) {

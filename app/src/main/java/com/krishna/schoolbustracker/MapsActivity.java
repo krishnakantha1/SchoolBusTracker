@@ -17,16 +17,13 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.ResultReceiver;
-
 import android.os.SystemClock;
 import android.view.View;
-
 import android.view.animation.LinearInterpolator;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
-
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -57,10 +54,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.textfield.TextInputLayout;
-
 import java.util.HashMap;
 import java.util.Map;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
@@ -112,7 +107,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             public void onClick(View view) {
                 String bus=search.getText().toString();
                 if(!bus.isEmpty()){
-                    zoomBus(bus);
+                    zoomBus(bus.toLowerCase());
                 }
             }
         });
@@ -123,11 +118,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         SharedPreferences sharedPreferences=getSharedPreferences("com.krishna.schoolbustracker",Context.MODE_PRIVATE);
 
-        //Search bar and button only shown if type=Admin.
+        //Search bar and button only shown if type=Admin(i.e. 1).
         if(!(sharedPreferences.getInt("admin",-1)==1)) {
             searchBtn.setVisibility(View.INVISIBLE);
             search.setVisibility(View.INVISIBLE);
         }
+        //The student register button on the top left corner shows only if type=Parent(i.e. 0).
         if((sharedPreferences.getInt("admin",-1)!=0))
         {
             studentadd.setVisibility(View.INVISIBLE);
@@ -145,7 +141,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             ResultReceiver r = new myReciver(null);
             i1.putExtra("reciver", r);
             startService(i1);
-            //service to obtain user location.
+            //service to obtain user location. if the user is a driver then the location from the device is not needed.
             if(sharedPreferences.getInt("admin",-1)!=2) {
                 Intent i2 = new Intent(this, GetMyLocation.class);
                 ResultReceiver r1 = new myLocation(null);
@@ -156,7 +152,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         askGPSLocation(this);
     }
 
-    //method to zoom on the bus searched by the admin if present.
+    //method to zoom on the bus searched by the admin if bus is present on the map.
     private void zoomBus(String bus) {
         if(markers.containsKey(bus)){
             LatLng ll=markers.get(bus).getPosition();
@@ -253,6 +249,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         startActivity(i);
     }
 
+    //To register the student under the parents id.
     public void sRegister(View view) {
         final TextInputLayout sname,busno;
         Button sreg;
@@ -329,12 +326,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     //Handle the location of the different school bus from the Myservice Service.
     public class myReciver extends ResultReceiver{
-
-
+        boolean flag=true;
         public myReciver(Handler handler) {
             super(handler);
         }
-        boolean flag=true;
+
         @Override
         protected void onReceiveResult(int resultCode, final Bundle requestdata){
             if(resultCode==RESULT_CODE && requestdata!=null){
@@ -379,8 +375,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         }
 
-        private void loadMarkerIcon(final Marker marker,String icon) {
-            String burlImg = "http://www.thantrajna.com/sjec_01/"+icon;
+        //load the icon given the url of the icon image.
+        private void loadMarkerIcon(final Marker marker,String url) {
+            String burlImg = "http://www.thantrajna.com/sjec_01/"+url;
             Glide.with(MapsActivity.this).asBitmap().load(burlImg).into(new CustomTarget<Bitmap>() {
                 @Override
                 public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
@@ -433,6 +430,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             });
         }
     }
+
+
     //Handle the user location obtained from mylocation service.
     public class myLocation extends ResultReceiver{
         double lat,lng,plat,plng;

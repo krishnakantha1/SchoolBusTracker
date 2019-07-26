@@ -52,9 +52,13 @@ public class BusLocInfoAdapter extends BaseAdapter {
         TextView destination=(TextView)convertView.findViewById(R.id.destination);
         TextView time=(TextView)convertView.findViewById(R.id.Bustime);
         ImageView showmap=(ImageView)convertView.findViewById(R.id.locationicon);
+
         final busLocInfoModel busLocInfo=info.get(i);
+
         destination.setText(busLocInfo.getPlace());
+
         time.setText(busLocInfo.getTime());
+
         showmap.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -65,6 +69,7 @@ public class BusLocInfoAdapter extends BaseAdapter {
                 activity.startActivity(i);
             }
         });
+
         return convertView;
     }
 }

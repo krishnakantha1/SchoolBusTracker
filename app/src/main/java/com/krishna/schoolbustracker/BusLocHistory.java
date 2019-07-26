@@ -31,6 +31,7 @@ public class BusLocHistory extends FragmentActivity implements OnMapReadyCallbac
         mapFragment.getMapAsync(this);
     }
 
+    //Just mark the location sent by the BusLocationInfo activity. That is all.
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;

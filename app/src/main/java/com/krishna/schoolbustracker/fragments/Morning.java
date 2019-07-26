@@ -75,6 +75,7 @@ public class Morning extends Fragment {
 
     }
 
+    //to check which students are present and which are absent.
     private void getStatus() {
         int count=0;
         for(int i=0;i<studentList.size();i++){
@@ -100,6 +101,7 @@ public class Morning extends Fragment {
         sendData();
     }
 
+    //to perform action depending the status of the students.
     private void sendData() {
         String url="http://www.thantrajna.com/sjec_01/morning.php";
         StringRequest stringRequest=new StringRequest(Request.Method.POST, url,

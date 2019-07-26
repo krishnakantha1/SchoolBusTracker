@@ -55,7 +55,7 @@ public class StudentBusAttendance extends AppCompatActivity {
         getStudents();
     }
 
-
+    //get the student in the current bus.
     private void getStudents() {
         String url="http://www.thantrajna.com/sjec_01/getStudentList.php";
         StringRequest stringRequest=new StringRequest(Request.Method.POST, url,
@@ -112,7 +112,7 @@ public class StudentBusAttendance extends AppCompatActivity {
         queue.add(stringRequest);
     }
 
-
+    //manage the fragments.
     class FragmentAdapter extends FragmentStatePagerAdapter implements Serializable {
         int counttab;
         Bundle bundle;

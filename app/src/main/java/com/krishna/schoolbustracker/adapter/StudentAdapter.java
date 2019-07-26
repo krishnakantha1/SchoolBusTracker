@@ -50,8 +50,11 @@ public class StudentAdapter extends BaseAdapter {
             convertView = inflater.inflate(R.layout.student_model, null);
         TextView textView =(TextView)convertView.findViewById(R.id.stud_name);
         final CheckBox checkBox=(CheckBox)convertView.findViewById(R.id.check);
+
         final StudentModels studentModels=students.get(position);
+
         textView.setText(studentModels.getName());
+
         checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {

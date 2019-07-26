@@ -56,6 +56,7 @@ public class BusLoctionInfo extends AppCompatActivity {
         progress.setTitle("Loading");
         progress.setMessage("Just a Moment");
 
+        //As to maintain uniformity with the database entry for date.
         letterMonth.put(0,"Jan");
         letterMonth.put(1,"Feb");
         letterMonth.put(2,"Mar");
@@ -71,6 +72,7 @@ public class BusLoctionInfo extends AppCompatActivity {
 
         infolist=(ListView)findViewById(R.id.busLocInfo);
 
+        //Get current date from phone.
         Calendar calendar = Calendar.getInstance();
         year = calendar.get(Calendar.YEAR);
         month = calendar.get(Calendar.MONTH);
@@ -79,6 +81,7 @@ public class BusLoctionInfo extends AppCompatActivity {
         date.setText(day+" / "+month+" / "+year);
         busname.setText(busno.toUpperCase());
 
+        //to pick date. press the text view to do it.
         date.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -105,6 +108,7 @@ public class BusLoctionInfo extends AppCompatActivity {
         getData(letterMonth.get(month-1));
     }
 
+    //get data from database to populate the listview.
     private void getData(String mon) {
         formateddate=year+"-"+mon+"-"+day;
         String url="http://www.thantrajna.com/sjec_01/getBusLocInfo.php";
