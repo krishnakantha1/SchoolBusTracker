@@ -27,7 +27,7 @@ import java.util.Map;
 
 public class ParentRegister extends AppCompatActivity {
     TextInputLayout fname,lname,email,phnum,address,brn,password,rpassword;
-    String firstname,lastname,emailaddr,phone,add,br,pass,rpass;
+    String firstname,lastname,emailaddr,phone,add,pass,rpass;
     Button regbtn;
     RequestQueue queue;
     ProgressDialog progress;
@@ -45,7 +45,6 @@ public class ParentRegister extends AppCompatActivity {
         email=(TextInputLayout)findViewById(R.id.email);
         phnum=(TextInputLayout)findViewById(R.id.phone);
         address=(TextInputLayout)findViewById(R.id.address);
-        brn=(TextInputLayout) findViewById(R.id.brn);
         password=(TextInputLayout)findViewById(R.id.password1);
         rpassword=(TextInputLayout)findViewById(R.id.rpassword1);
 
@@ -70,7 +69,6 @@ public class ParentRegister extends AppCompatActivity {
         emailaddr=email.getEditText().getText().toString();
         phone=phnum.getEditText().getText().toString();
         add=address.getEditText().getText().toString();
-        br=brn.getEditText().getText().toString();
         pass=password.getEditText().getText().toString();
         rpass=rpassword.getEditText().getText().toString();
 
@@ -84,8 +82,7 @@ public class ParentRegister extends AppCompatActivity {
             Toast.makeText(this, "enter your phone number.", Toast.LENGTH_SHORT).show();
         }else if(add.isEmpty()){
             Toast.makeText(this, "enter your address", Toast.LENGTH_SHORT).show();
-        }else if(br.isEmpty()){
-            Toast.makeText(this, "enter your bus route number.", Toast.LENGTH_SHORT).show();
+
         }else if(pass.isEmpty()){
             Toast.makeText(this, "enter a password", Toast.LENGTH_SHORT).show();
         }else if(rpass.isEmpty()){
@@ -126,7 +123,6 @@ public class ParentRegister extends AppCompatActivity {
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         progress.dismiss();
-                        Toast.makeText(ParentRegister.this, ""+error, Toast.LENGTH_SHORT).show();
                     }
                 }){
             @Override
@@ -137,7 +133,6 @@ public class ParentRegister extends AppCompatActivity {
                 params.put("email",emailaddr);
                 params.put("phone",phone);
                 params.put("address",add);
-                params.put("busroutenumber",br);
                 params.put("password",pass);
 
                 return params;
@@ -153,6 +148,7 @@ public class ParentRegister extends AppCompatActivity {
         SharedPreferences.Editor editor=prefs.edit();
         editor.putString("email",emailaddr);
         editor.putString("password",pass);
+        editor.putInt("admin",0);
         try {
             int id1=Integer.parseInt(id);
             editor.putInt("id",id1);

@@ -114,7 +114,6 @@ public class Morning extends Fragment {
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         progress.dismiss();
-                        Toast.makeText(getActivity(), ""+error, Toast.LENGTH_SHORT).show();
                     }
                 }){@Override
         protected Map<String,String> getParams()throws AuthFailureError {

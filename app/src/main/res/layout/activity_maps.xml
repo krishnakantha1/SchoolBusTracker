@@ -39,6 +39,15 @@
                 android:layout_marginRight="10dp"
                 android:onClick="home"
                 android:src="@drawable/logout" />
+
+            <ImageView
+                android:id="@+id/studentregister"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_alignParentLeft="true"
+                android:layout_marginRight="10dp"
+                android:onClick="sRegister"
+                android:src="@drawable/ic_launcher_foreground2" />
         </RelativeLayout>
 
 
@@ -72,6 +81,7 @@
             android:layout_weight="1"
             android:textSize="10dp"
             android:text="Search"
+            android:background="@color/yellow"
             />
 
 

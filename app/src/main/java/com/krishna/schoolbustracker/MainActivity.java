@@ -9,10 +9,8 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -20,7 +18,6 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
 import org.json.JSONArray;
@@ -124,14 +121,13 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         progress.dismiss();
-                        Toast.makeText(MainActivity.this, ""+error, Toast.LENGTH_SHORT).show();
                     }
                 }){
                     @Override
                     protected Map<String,String> getParams()throws AuthFailureError {
                         Map<String,String> parms=new HashMap<String, String>();
                         parms.put("userid",uid);
-                    parms.put("password",pass);
+                        parms.put("password",pass);
                     return parms;
                 }
         };

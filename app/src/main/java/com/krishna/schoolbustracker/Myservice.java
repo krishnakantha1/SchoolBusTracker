@@ -6,8 +6,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.ResultReceiver;
-import android.widget.Toast;
-
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -96,7 +94,6 @@ public class Myservice extends IntentService {
                                 @Override
                                 public void onErrorResponse(VolleyError error) {
                                     run=false;
-                                    Toast.makeText(Myservice.this, "" + error, Toast.LENGTH_SHORT).show();
                                 }
                             }) {
                         @Override
@@ -105,8 +102,10 @@ public class Myservice extends IntentService {
                             params.put("id",""+id);
                             if(admin==1)
                                 params.put("code", "getall");
-                            else
+                            else if(admin==0)
                                 params.put("code", "getone");
+                            else
+                                params.put("code","getDriver");
                             return params;
                         }
                     };

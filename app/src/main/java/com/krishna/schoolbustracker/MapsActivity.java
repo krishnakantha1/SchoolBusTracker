@@ -1,15 +1,17 @@
 package com.krishna.schoolbustracker;
 
 import android.Manifest;
+import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Point;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
@@ -17,29 +19,28 @@ import android.os.Handler;
 import android.os.ResultReceiver;
 
 import android.os.SystemClock;
-import android.view.KeyEvent;
 import android.view.View;
 
 import android.view.animation.LinearInterpolator;
-import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ListView;
-import android.widget.SearchView;
-import android.widget.TextView;
+import android.widget.ImageView;
 import android.widget.Toast;
-import android.widget.Toolbar;
 
-import com.android.volley.toolbox.NetworkImageView;
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.CustomTarget;
-import com.bumptech.glide.request.target.SimpleTarget;
 import com.bumptech.glide.request.transition.Transition;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
-import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
@@ -50,12 +51,12 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.Projection;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.material.textfield.TextInputLayout;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -71,21 +72,30 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private static final int REQUEST_LOCATION = 1;
     private static final int REQUEST_CHECK_SETTINGS=3;
-    public static boolean SELF_GPS_RETRIVAL=true;
     private GoogleMap mMap;
     Handler h = new Handler();
     Handler h2 = new Handler();
+    ProgressDialog progress;
 
     public static final int RESULT_CODE = 99;
     public static final int GOT_LOCATION = 98;
     EditText search;
     Button searchBtn;
+    ImageView studentadd;
     Map<String,Marker> markers;
+    Dialog myDialog;
+    String busnumber,studentname;
+    int id;
+    RequestQueue queue;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+
+        myDialog =new Dialog(this);
+
+
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -94,6 +104,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         search = (EditText) findViewById(R.id.search);
         searchBtn=(Button)findViewById(R.id.searchbtn);
+        studentadd=(ImageView)findViewById(R.id.studentregister);
 
         //Search button
         searchBtn.setOnClickListener(new View.OnClickListener() {
@@ -106,14 +117,21 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
 
+        progress = new ProgressDialog(this);
+        progress.setTitle("Loading");
+        progress.setMessage("Just a Moment");
+
         SharedPreferences sharedPreferences=getSharedPreferences("com.krishna.schoolbustracker",Context.MODE_PRIVATE);
 
         //Search bar and button only shown if type=Admin.
-        if(!(sharedPreferences.getInt("admin",-1)==1)){
+        if(!(sharedPreferences.getInt("admin",-1)==1)) {
             searchBtn.setVisibility(View.INVISIBLE);
             search.setVisibility(View.INVISIBLE);
         }
-
+        if((sharedPreferences.getInt("admin",-1)!=0))
+        {
+            studentadd.setVisibility(View.INVISIBLE);
+        }
         //Ask app permission for location.
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission
@@ -123,17 +141,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         } else {
             //Service to obtain bus location.
-            if(sharedPreferences.getInt("admin",-1)!=2) {
-                 Intent i1= new Intent(this, Myservice.class);
-                ResultReceiver r = new myReciver(null);
-                i1.putExtra("reciver", r);
-                startService(i1);
-            }
+            Intent i1= new Intent(this, Myservice.class);
+            ResultReceiver r = new myReciver(null);
+            i1.putExtra("reciver", r);
+            startService(i1);
             //service to obtain user location.
-            Intent i2 = new Intent(this, GetMyLocation.class);
-            ResultReceiver r1 = new myLocation(null);
-            i2.putExtra("reciver", r1);
-            startService(i2);
+            if(sharedPreferences.getInt("admin",-1)!=2) {
+                Intent i2 = new Intent(this, GetMyLocation.class);
+                ResultReceiver r1 = new myLocation(null);
+                i2.putExtra("reciver", r1);
+                startService(i2);
+            }
         }
         askGPSLocation(this);
     }
@@ -212,8 +230,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     Intent i=new Intent(MapsActivity.this,StudentBusAttendance.class);
                     i.putExtra("busno",marker.getTitle());
                     startActivity(i);
-                }else{
+                }else if(!marker.getTitle().equalsIgnoreCase("My Location")){
                     Intent i=new Intent(MapsActivity.this,BusLoctionInfo.class);
+                    i.putExtra("busno",marker.getTitle());
                     startActivity(i);
                 }
                 return false;
@@ -234,6 +253,80 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         startActivity(i);
     }
 
+    public void sRegister(View view) {
+        final TextInputLayout sname,busno;
+        Button sreg;
+
+        myDialog.setContentView(R.layout.popup);
+        sname=myDialog.findViewById(R.id.sname);
+        busno=myDialog.findViewById(R.id.busno);
+        sreg=myDialog.findViewById(R.id.sregister);
+
+
+
+        myDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        myDialog.show();
+
+        sreg.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                SharedPreferences sharedPreferences=getSharedPreferences("com.krishna.schoolbustracker", Context.MODE_PRIVATE);
+                id=sharedPreferences.getInt("id",-1);
+                queue = Volley.newRequestQueue(MapsActivity.this);
+                busnumber=busno.getEditText().getText().toString();
+                studentname=sname.getEditText().getText().toString();
+                if(studentname.isEmpty()){
+                    Toast.makeText(MapsActivity.this, "Fill in Student name.", Toast.LENGTH_SHORT).show();
+                }
+                else if(busnumber.isEmpty()){
+                    Toast.makeText(MapsActivity.this, "Fill in Bus number.", Toast.LENGTH_SHORT).show();
+                }
+                else {
+                    progress.show();
+                    String url = "http://www.thantrajna.com/sjec_01/studentRegistration.php";
+                    StringRequest stringRequest = new StringRequest(Request.Method.POST, url,
+                            new Response.Listener<String>() {
+                                @Override
+                                public void onResponse(String response) {
+                                    progress.dismiss();
+                                    if(response.equals("success"))
+                                    {
+                                        Toast.makeText(MapsActivity.this, "Student Registered.", Toast.LENGTH_SHORT).show();
+                                        myDialog.dismiss();
+                                    }else{
+                                        Toast.makeText(MapsActivity.this, response, Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+
+                            },
+                            new Response.ErrorListener() {
+                                @Override
+                                public void onErrorResponse(VolleyError error) {
+                                    progress.dismiss();
+                                    Toast.makeText(MapsActivity.this, "Some problem occurred. Please try later.", Toast.LENGTH_SHORT).show();
+                                }
+                            }) {
+                        @Override
+                        protected Map<String, String> getParams() throws AuthFailureError {
+                            Map<String, String> params = new HashMap<String, String>();
+                            params.put("id",""+id);
+                            params.put("busno",busnumber.toLowerCase());
+                            params.put("sname",studentname.toLowerCase());// to avoid registering multiple times.
+
+                            return params;
+                        }
+                    };
+                    queue.add(stringRequest);
+                }
+
+
+            }
+        });
+
+
+    }
+
     //Handle the location of the different school bus from the Myservice Service.
     public class myReciver extends ResultReceiver{
 
@@ -245,12 +338,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         @Override
         protected void onReceiveResult(int resultCode, final Bundle requestdata){
             if(resultCode==RESULT_CODE && requestdata!=null){
+                final SharedPreferences sharedPreferences=getSharedPreferences("com.krishna.schoolbustracker",Context.MODE_PRIVATE);
                  final double[] lt=requestdata.getDoubleArray("lat");
                  final double[] lg=requestdata.getDoubleArray("lng");
                  final String[] id1=requestdata.getStringArray("busno");
                  final String[] iconurl=requestdata.getStringArray("url");
                  final int len=requestdata.getInt("leng");
-                h.post(new Runnable() {
+                 h.post(new Runnable() {
                     @Override
                     public void run() {
                         try {
@@ -260,13 +354,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                         Marker marker=mMap.addMarker(new MarkerOptions().position(position).title(id1[i]));
                                         loadMarkerIcon(marker,iconurl[i]);
                                         markers.put(id1[i],marker);
+                                        if(sharedPreferences.getInt("admin",-1)==2)
+                                            zoomBus(id1[i]);
                                     }
                                     flag=false;
                                 }else{
                                     for(int i=0;i<len;i++){
                                         if(!markers.containsKey(id1[i])){
                                             LatLng position = new LatLng(lt[i], lg[i]);
-                                            Marker marker=mMap.addMarker(new MarkerOptions().position(position).title("Marker in Sydney"));
+                                            Marker marker=mMap.addMarker(new MarkerOptions().position(position).title(id1[i]));
                                             loadMarkerIcon(marker,iconurl[i]);
                                             markers.put(id1[i],marker);
                                             continue;
@@ -288,7 +384,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             Glide.with(MapsActivity.this).asBitmap().load(burlImg).into(new CustomTarget<Bitmap>() {
                 @Override
                 public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
-                    Bitmap newBit=Bitmap.createScaledBitmap(resource,80,80,false);
+                    Bitmap newBit=Bitmap.createScaledBitmap(resource,120,80,false);
                     marker.setIcon(BitmapDescriptorFactory.fromBitmap(newBit));
                 }
 
@@ -355,7 +451,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         try {
                             lat = requestdata.getDouble("lat");
                             lng = requestdata.getDouble("lng");
-                            Toast.makeText(MapsActivity.this, lat+"  "+lng, Toast.LENGTH_SHORT).show();
                             LatLng myLocation1 = new LatLng(lat, lng);
                             if (once){
                                 myloc=mMap.addMarker(new MarkerOptions().position(new LatLng(lat, lng)).title("My Location").icon(BitmapDescriptorFactory.fromResource(R.drawable.user)));
